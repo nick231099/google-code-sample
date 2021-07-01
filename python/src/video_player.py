@@ -1,7 +1,45 @@
 """A video player class."""
-
+global x
+x = False
 from .video_library import VideoLibrary
+is_playing = False
+previous_video = None
+now_playing = False
 
+from src.video_playlist import Playlist
+from src.video import Video
+from .video_library import VideoLibrary
+import random
+import enum
+
+class video_state(enum.Enum):
+    Playing = 1
+    Pause = 2
+    Stop = 3
+    Continue = 4
+
+
+class video_under_process:
+    def __init__(self):
+        self.video = None
+        self.status = video_state.Stop
+
+    def set_video(self, video, state):
+        self.video = video
+        self.set_status(state)
+
+    def set_status(self, state):
+        self.status = state
+
+        if self.status == video_state.Playing:
+            print("Playing video: " + self.video._title)
+        elif self.status == video_state.Pause:
+            print("Pausing video: " + self.video._title)
+        elif self.status == video_state.Stop:
+            print("Stopping video: " + self.video._title)
+            self.video = None
+        elif self.status == video_state.Continue:
+            print("Continuing video: " + self.video._title)
 
 class VideoPlayer:
     """A class used to represent a Video Player."""
@@ -15,21 +53,69 @@ class VideoPlayer:
 
     def show_all_videos(self):
         """Returns all videos."""
+        videos = self._video_library.get_all_videos()
+        print("Here's a list of all available videos:")
+        temp_list = []
 
-        print("show_all_videos needs implementation")
+        for vid in videos:
+
+            # Convoluted way to display tags in required format
+            tags = "["
+            for tag in vid.tags:
+                tags = tags + tag + " "
+            tags = tags + "]"
+
+            if tags != "[]":
+                tags = tags[0:len(tags) - 2] + "]"
+
+            # Put all videos in a list for sorting
+            temp_list += [f"{vid.title} ({vid.video_id}) {tags}"]
+
+        # Sort the list and display
+        sorted_list = sorted(temp_list)
+        for x in sorted_list:
+            print(x)
+
+
 
     def play_video(self, video_id):
-        """Plays the respective video.
+        global is_playing
+        global previous_video
+        """Plays the respective video."""
 
-        Args:
-            video_id: The video_id to be played.
-        """
-        print("play_video needs implementation")
+        """Args: video_id: The video_id to be played."""
+
+        now_playing = self._video_library.get_video(video_id)
+
+        if not now_playing:
+            print(f"cannot play video: Video does not exist!")
+        else:
+            if is_playing is True:
+                print(f"Stopping video: {previous_video}")
+                print(f"Playing video: {now_playing.title}")
+                previous_video = now_playing.title
+            else:
+                print(f"Playing video: {now_playing.title}")
+                is_playing = True
+                previous_video = now_playing.title
+
 
     def stop_video(self):
+
+        #global is_playing
+        #global previous_video
+        #global now_playing
+
         """Stops the current video."""
 
-        print("stop_video needs implementation")
+        if self.video_under_process.status != video_state.Stop:
+            self.video_under_process.set_status(video_state.Stop)
+
+        else:
+            print("Cannot stop video: No video is currently playing")
+
+
+        #print("stop_video needs implementation")
 
     def play_random_video(self):
         """Plays a random video from the video library."""
